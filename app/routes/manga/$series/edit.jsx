@@ -11,7 +11,8 @@ import {
   markChapter,
   hideChapter,
   removeChapter,
-  reorderChapters
+  reorderChapters,
+  resyncManga
 } from '../../../utils/manga.server'
 import { DndProvider, useDrag, useDrop } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -34,10 +35,12 @@ export async function action({ request, params: { series } }) {
     } else if (formData.has('action-reorder')) {
       await reorderChapters(JSON.parse(formData.get('action-reorder')))
       return null
+    } else if (formData.has('action-resync')) {
+      await resyncManga(series)
+      return redirect(`/manga/${series}/edit`)
     }
 
     const { chapters } = await getMangaDetail(series)
-    console.log(checkedChapters)
 
     for (const chapter of chapters) {
       const id = chapter._id.toString()
@@ -118,6 +121,9 @@ export default function MangaSeriesEdit() {
           </button>
           <button className='btn btn-ghost' type='submit' name='action-show-all'>
             Show all &amp; Reset order
+          </button>
+          <button className='btn btn-ghost' type='submit' name='action-resync'>
+            Resync
           </button>
         </Form>
       </div>
