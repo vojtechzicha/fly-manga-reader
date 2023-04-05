@@ -8,8 +8,7 @@ export function headers() {
 }
 
 export async function loader({ request, params: { manga } }) {
-  // return authorize(request, async () => {
-  //   return new Response(await getThumbnailImage(manga))
-  // })
-  return null
+  return authorize(request, async () => {
+    return new Response(await getThumbnailImage(manga))
+  })
 }
