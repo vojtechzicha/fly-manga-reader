@@ -325,7 +325,7 @@ export async function showAllChapters(mangaPath) {
 }
 
 export async function resyncManga(mangaPath) {
-  await chaptersCollection.updateMany({ mangaPath }, [{ $unset: { lastSync: '', lastSyncWithUpdate: '' } }])
+  await mangasCollection.updateOne({ 'request.slug': mangaPath }, { $unset: { lastSync: '', lastSyncWithUpdate: '' } })
 }
 
 export async function rateSeries(mangaId, rating = 0) {

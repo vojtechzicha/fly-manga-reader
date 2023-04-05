@@ -4,7 +4,6 @@ import { authorize } from '../../onedrive.server'
 
 import { getMangaDetail, rateSeries, getRelatedMangasByGenre, getRelatedMangasByAuthor } from '../../utils/manga.server'
 import { MangaViewTable } from '../../components/mangaView'
-import { MangaDownloaderView } from '~/components/mangaDownloader.client'
 
 export async function action({ request, params: { series } }) {
   return authorize(request, async () => {
@@ -66,8 +65,6 @@ function Header({ details, chapters }) {
   const rating = details.rating ?? 0
   const allUnread = chapters.filter(ch => !ch.hidden && !ch.read).length === 0
   const submit = useSubmit()
-
-  const downloaderView = MangaDownloaderView === undefined ? <></> : <MangaDownloaderView chapters={chapters} />
 
   return (
     <div id='feature' className='bg-blue-100 dark:bg-slate-800 pt-24 pb-5'>
@@ -173,9 +170,6 @@ function Header({ details, chapters }) {
                 </div>
               </div>
             </div>
-          </div>
-          <div className='w-1/4 lg:w-1/4'>
-            <div className='mb-5'>{downloaderView}</div>
           </div>
         </div>
       </div>
