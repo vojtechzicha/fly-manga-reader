@@ -30,7 +30,7 @@ function redirectUrl(state) {
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('client_id', onedrive.clientId)
   url.searchParams.set('redirect_uri', onedrive.callbackUrl)
-  url.searchParams.set('scope', 'Files.ReadWrite.All')
+  url.searchParams.set('scope', 'Files.ReadWrite.All offline_access')
   url.searchParams.set('state', state)
 
   return url.toString()
@@ -74,6 +74,41 @@ export async function authorize(request, callback, checkOnedrive = false) {
     if (e.__passthrough !== undefined && e.error.code !== 'InvalidAuthenticationToken') throw e.error
     session.unset('token')
 
+    if (session.has('refreshToken')) {
+      const refreshToken = session.get('refreshToken')
+      session.unset('refreshToken')
+
+      try {
+        console.log('TRYING refresh token route')
+
+        const data = new URLSearchParams()
+        data.append('client_id', onedrive.clientId)
+        data.append('redirect_uri', onedrive.callbackUrl)
+        data.append('client_secret', onedrive.clientSecret)
+        data.append('grant_type', 'refresh_token')
+        data.append('refresh_token', refreshToken)
+        const response = await fetch(onedrive.tokenUrl, {
+          method: 'POST',
+          headers: new Headers([['Content-Type', 'application/x-www-form-urlencoded']]),
+          body: data
+        })
+        const body = await response.json()
+
+        if (body.error) {
+          throw body.error
+        }
+
+        session.set('token', body.access_token)
+        session.set('refreshToken', body.refresh_token)
+
+        return redirect(request.url, {
+          headers: new Headers([['Set-Cookie', await commitSession(session)]])
+        })
+      } catch (e) {
+        console.error('Refresh Token retrieval error')
+      }
+    }
+
     const state = encodeURIComponent(uuid())
     session.set('onedrive:state', state)
     session.set('onedrive:redirecturl', request.url)
@@ -99,7 +134,7 @@ export async function handleRedirect(request) {
 
   const data = new URLSearchParams()
   data.append('client_secret', onedrive.clientSecret)
-  data.append('grant_type', 'authorization_code')
+  data.append('grant_type', 'authorization_code ')
   data.append('redirect_uri', onedrive.callbackUrl)
   data.append('client_id', onedrive.clientId)
   data.append('code', code)
@@ -116,6 +151,7 @@ export async function handleRedirect(request) {
   }
 
   session.set('token', body.access_token)
+  session.set('refreshToken', body.refresh_token)
 
   const newRedirectUri = session.get('onedrive:redirecturl') ?? '/'
   session.unset('onedrive:redirecturl')
