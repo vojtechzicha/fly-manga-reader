@@ -76,6 +76,7 @@ export async function authorize(request, callback, checkOnedrive = false) {
 
     const state = encodeURIComponent(uuid())
     session.set('onedrive:state', state)
+    session.set('onedrive:redirecturl', request.url)
 
     return redirect(redirectUrl(state), {
       headers: { 'Set-Cookie': await commitSession(session) }
@@ -116,7 +117,10 @@ export async function handleRedirect(request) {
 
   session.set('token', body.access_token)
 
-  return redirect('/', {
+  const newRedirectUri = session.get('onedrive:redirecturl') ?? '/'
+  session.unset('onedrive:redirecturl')
+
+  return redirect(newRedirectUri, {
     headers: new Headers([['Set-Cookie', await commitSession(session)]])
   })
 }
