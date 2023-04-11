@@ -19,7 +19,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import update from 'immutability-helper'
 
 export async function action({ request, params: { series } }) {
-  return authorize(request, async () => {
+  return authorize(request, async ({ token }) => {
     const formData = await request.formData(),
       checkedChapters = formData.getAll('chapters')
 
@@ -64,7 +64,7 @@ export async function action({ request, params: { series } }) {
         } else if (formData.has('action-hide')) {
           await hideChapter(id)
         } else if (formData.has('action-remove')) {
-          await removeChapter(id)
+          await removeChapter(token, id)
         }
       }
     }

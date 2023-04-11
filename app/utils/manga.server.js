@@ -299,8 +299,18 @@ export async function hideChapter(chapterId) {
   await chaptersCollection.updateOne({ _id: ObjectId(chapterId) }, { $set: { hidden: true, seen: true } })
 }
 
-export async function removeChapter(chapterId) {
-  await chaptersCollection.removeOne({ _id: ObjectId(chapterId) })
+export async function removeChapter(token, chapterId) {
+  const chapter = await chaptersCollection.findOne({ _id: ObjectId(chapterId) })
+
+  const res = await fetch(`${rootPath}/${chapter.mangaPath}/${chapter.chapterPath}`, {
+    method: 'DELETE',
+    headers: new Headers([['Authorization', `Bearer ${token}`]])
+  })
+  const body = await res.json()
+
+  if (res.status !== 204 || body.error) throw body
+
+  await chaptersCollection.deleteOne({ _id: ObjectId(chapterId) })
 }
 
 export async function markChapter(chapterId, asRead, readDate = null) {
