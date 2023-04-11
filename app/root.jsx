@@ -83,7 +83,7 @@ export default function App() {
         <footer id='footer' className='bg-gray-800 py-16'>
           <div className='container'>
             <div className='flex flex-wrap'>
-              <div className='w-full sm:w-1/2 md:w-1/2 lg:w-1/4 wow fadeInUp' data-wow-delay='0.2s'>
+              {/* <div className='w-full sm:w-1/2 md:w-1/2 lg:w-1/4 wow fadeInUp' data-wow-delay='0.2s'>
                 <div className='mx-3 mb-8'>
                   <div className='footer-logo mb-3'>
                     <img src='assets/img/logo.svg' alt='' />
@@ -93,7 +93,7 @@ export default function App() {
                     voluptatem.
                   </p>
                 </div>
-              </div>
+              </div>  */}
               {/* <div className='w-full sm:w-1/2 md:w-1/2 lg:w-1/4 wow fadeInUp' data-wow-delay='0.4s'>
                 <div className='mx-3 mb-8'>
                   <h3 className='font-bold text-xl text-white mb-5'>Company</h3>
