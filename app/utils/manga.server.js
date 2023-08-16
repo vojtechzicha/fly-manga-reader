@@ -338,6 +338,10 @@ export async function resyncManga(mangaPath) {
   await mangasCollection.updateOne({ 'request.slug': mangaPath }, { $unset: { lastSync: '', lastSyncWithUpdate: '' } })
 }
 
+export async function dedupManga(mangaPath) {
+  await mangasCollection.updateOne({ 'request.slug': mangaPath }, { $set: { dedupRequest: true } })
+}
+
 export async function rateSeries(mangaId, rating = 0) {
   await mangasCollection.updateOne({ _id: ObjectId(mangaId) }, { $set: { rating } })
 }
