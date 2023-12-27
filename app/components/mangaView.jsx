@@ -96,26 +96,22 @@ export function MangaTable({ id, mangas, heading }) {
 
 function MangaViewCell({ manga }) {
   const rating = manga.rating ?? 0
+  const thumbnailSrc =
+    manga.thumbnail !== undefined
+      ? `data:image/jpeg;base64, ${manga.thumbnail.toString('base64')}`
+      : `/manga/${manga.request.slug}/thumbnail`
+
   return (
     <div className='max-w-sm sm:w-1/2 md:w-1/4 lg:w-1/6'>
       <div className='team-item'>
         <div className='team-img relative'>
           <Link to={`manga/${manga.request.slug}/read`}>
-            {manga.thumbnail !== undefined ? (
-              <img
-                className='img-fluid'
-                src={`data:image/jpeg;base64, ${manga.thumbnail.toString('base64')}`}
-                alt='Manga thumbnail'
-                style={{ width: '370px', height: '320px', objectFit: 'cover' }}
-              />
-            ) : (
-              <img
-                className='img-fluid'
-                src={`/manga/image/${manga.request.slug}`}
-                alt='Manga thumbnail'
-                style={{ width: '370px', height: '320px', objectFit: 'cover' }}
-              />
-            )}
+            <img
+              className='img-fluid'
+              src={thumbnailSrc}
+              alt='Manga thumbnail'
+              style={{ width: '370px', height: '320px', objectFit: 'cover' }}
+            />
           </Link>
         </div>
         <div className='text-center px-5 py-3 dark:bg-slate-500'>

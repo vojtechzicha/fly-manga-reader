@@ -1,23 +1,7 @@
 import { chaptersCollection, mangasCollection, session } from '../db.server'
 import { ObjectId } from 'mongodb'
 import { max } from 'date-fns'
-
-const { ONEDRIVE_ROOT_PATH } = process.env
-
-if (!ONEDRIVE_ROOT_PATH) throw new Error('Missing OneDrive client ID in environment variables.')
-const rootPath = ONEDRIVE_ROOT_PATH
-
-async function fetchOnedrive(path, token) {
-  const response = await fetch(`${rootPath}/${path}`, {
-    method: 'GET',
-    headers: new Headers([['Authorization', `Bearer ${token}`]])
-  }).then(r => r.json())
-
-  if (response.error !== undefined) {
-    throw response.error
-  }
-  return response
-}
+import { deleteAllFilesForChapter, listImagesForChapter } from './s3.server'
 
 export async function getAllMangaSeries() {
   return await mangasCollection
@@ -273,42 +257,18 @@ export async function getMangaDetail(mangaPath) {
   return { details, chapters }
 }
 
-export async function getImages(token, seriesId, chapterId) {
-  const childItems = await fetchOnedrive(`${seriesId}/${chapterId}:/children`, token)
-
-  const images = childItems.value.map(imageItem => imageItem.name).filter(file => /^Img-([0-9]+)/.exec(file) !== null)
-  images.sort(
-    (fA, fB) => Number.parseInt(/^Img-([0-9]+)/.exec(fA)[1], 10) - Number.parseInt(/Img-([0-9]+)/.exec(fB)[1], 10)
-  )
-  return images
-}
-
-export function getImage(token, manga, chapter, image) {
-  return fetch(`${rootPath}/${manga}/${chapter}/${image}:/content`, {
-    method: 'GET',
-    headers: new Headers([['Authorization', `Bearer ${token}`]])
-  }).then(response => response.body)
-}
-
-export async function getThumbnailImage(mangaPath) {
-  const manga = await mangasCollection.findOne({ 'request.slug': mangaPath }, { projection: { thumbnail: 1, _id: 0 } })
-  return manga.thumbnail.buffer
+export async function getImages(seriesId, chapterId) {
+  return await listImagesForChapter(seriesId, chapterId)
 }
 
 export async function hideChapter(chapterId) {
   await chaptersCollection.updateOne({ _id: ObjectId(chapterId) }, { $set: { hidden: true, seen: true } })
 }
 
-export async function removeChapter(token, chapterId) {
+export async function removeChapter(chapterId) {
   const chapter = await chaptersCollection.findOne({ _id: ObjectId(chapterId) })
 
-  const res = await fetch(`${rootPath}/${chapter.mangaPath}/${chapter.chapterPath}`, {
-    method: 'DELETE',
-    headers: new Headers([['Authorization', `Bearer ${token}`]])
-  })
-  const body = await res.json()
-
-  if (res.status !== 204 || body.error) throw body
+  await deleteAllFilesForChapter(chapter.mangaPath, chapter.chapterPath)
 
   await chaptersCollection.deleteOne({ _id: ObjectId(chapterId) })
 }

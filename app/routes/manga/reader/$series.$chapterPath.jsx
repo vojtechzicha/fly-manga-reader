@@ -1,6 +1,5 @@
 import { redirect } from '@remix-run/node'
 import { Link, useLoaderData, Form } from '@remix-run/react'
-import { authorize } from '../../../onedrive.server'
 
 import {
   getImages,
@@ -12,42 +11,32 @@ import {
 } from '../../../utils/manga.server'
 
 export async function action({ request, params: { series, chapterPath } }) {
-  return await authorize(request, async () => {
-    const formData = await request.formData(),
-      action = formData.get('action'),
-      chapterId = formData.get('chapter-id')
+  const formData = await request.formData(),
+    action = formData.get('action'),
+    chapterId = formData.get('chapter-id')
 
-    const targetChapter =
-      action === 'prev-chapter'
-        ? await getPreviousChapter(series, chapterPath)
-        : await getNextChapter(series, chapterPath)
+  const targetChapter =
+    action === 'prev-chapter'
+      ? await getPreviousChapter(series, chapterPath)
+      : await getNextChapter(series, chapterPath)
 
-    await markChapter(chapterId, action === 'next-chapter')
-    if (targetChapter === null) {
-      return redirect(`/manga/${series}`)
-    } else {
-      return redirect(`/manga/reader/${series}/${targetChapter.chapterPath}`)
-    }
-  })
+  await markChapter(chapterId, action === 'next-chapter')
+  if (targetChapter === null) {
+    return redirect(`/manga/${series}`)
+  } else {
+    return redirect(`/manga/reader/${series}/${targetChapter.chapterPath}`)
+  }
 }
 
 export async function loader({ request, params: { series, chapterPath } }) {
-  return await authorize(
-    request,
-    async ({ token }) => {
-      await markChapterAsSeen(series, chapterPath)
+  await markChapterAsSeen(series, chapterPath)
 
-      const { details, chapters } = await getMangaDetail(series)
-      return {
-        images: (await getImages(token, series, chapterPath)).map(
-          img => `/manga/image/${series}/${chapterPath}/${img}`
-        ),
-        details,
-        chapter: chapters.filter(ch => ch.chapterPath === chapterPath)[0]
-      }
-    },
-    true
-  )
+  const { details, chapters } = await getMangaDetail(series)
+  return {
+    images: await getImages(series, chapterPath),
+    details,
+    chapter: chapters.filter(ch => ch.chapterPath === chapterPath)[0]
+  }
 }
 
 export default function Index() {

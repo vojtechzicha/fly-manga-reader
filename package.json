@@ -12,6 +12,7 @@
     "@remix-run/node": "^1.7.0",
     "@remix-run/react": "^1.7.0",
     "@remix-run/serve": "^1.7.0",
+    "aws-sdk": "^2.1525.0",
     "daisyui": "^2.24.0",
     "date-fns": "^2.29.2",
     "dexie": "^3.2.2",

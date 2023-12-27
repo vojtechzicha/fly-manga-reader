@@ -1,31 +1,26 @@
 import { redirect } from '@remix-run/node'
 import { Link, useLoaderData, Form, useSubmit, Outlet } from '@remix-run/react'
-import { authorize } from '../../onedrive.server'
 
 import { getMangaDetail, rateSeries, getRelatedMangasByGenre, getRelatedMangasByAuthor } from '../../utils/manga.server'
 import { MangaViewTable } from '../../components/mangaView'
 
 export async function action({ request, params: { series } }) {
-  return authorize(request, async () => {
-    const formData = await request.formData(),
-      action = formData.get('action')
+  const formData = await request.formData(),
+    action = formData.get('action')
 
-    if (action === 'rate') {
-      await rateSeries(formData.get('mangaId'), Number.parseInt(formData.get('rating-10'), 10))
-    }
+  if (action === 'rate') {
+    await rateSeries(formData.get('mangaId'), Number.parseInt(formData.get('rating-10'), 10))
+  }
 
-    return redirect(`/manga/${series}`)
-  })
+  return redirect(`/manga/${series}`)
 }
 
 export async function loader({ request, params: { series } }) {
-  return authorize(request, async () => {
-    return {
-      ...(await getMangaDetail(series)),
-      byGenres: await getRelatedMangasByGenre(series),
-      byAuthor: await getRelatedMangasByAuthor(series)
-    }
-  })
+  return {
+    ...(await getMangaDetail(series)),
+    byGenres: await getRelatedMangasByGenre(series),
+    byAuthor: await getRelatedMangasByAuthor(series)
+  }
 }
 
 export default function MangaSeriesLayout() {
@@ -76,7 +71,7 @@ function Header({ details, chapters }) {
           <div className='w-full lg:w-1/4'>
             <div className='mx-3 lg:mr-0 lg:ml-3 wow fadeInRight' data-wow-delay='0.3s'>
               <Link to={`read`}>
-                <img src={`/manga/image/${details.request.slug}`} alt='Manga Thumbnail' />
+                <img src={`/manga/${details.request.slug}/thumbnail`} alt='Manga Thumbnail' />
               </Link>
             </div>
           </div>

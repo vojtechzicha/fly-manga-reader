@@ -1,5 +1,4 @@
 import { useLoaderData } from '@remix-run/react'
-import { authorize } from '../onedrive.server'
 
 import {
   getAllMangaSeries,
@@ -17,15 +16,13 @@ function waitForObject(obj) {
 }
 
 export async function loader({ request }) {
-  return authorize(request, () => {
-    return waitForObject({
-      all: getAllMangaSeries(),
-      byGenre: getMangaSeriesByGenre(),
-      onDeck: getMangaSeriesOnDeck(),
-      lastUpdated: getLastUpdatedSeries(),
-      newUpdates: getNewUpdates(),
-      readAgain: getReadAgainSeries()
-    })
+  return waitForObject({
+    all: getAllMangaSeries(),
+    byGenre: getMangaSeriesByGenre(),
+    onDeck: getMangaSeriesOnDeck(),
+    lastUpdated: getLastUpdatedSeries(),
+    newUpdates: getNewUpdates(),
+    readAgain: getReadAgainSeries()
   })
 }
 

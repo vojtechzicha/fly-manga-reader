@@ -2,7 +2,6 @@ import { Link, Form, useFetcher, useLoaderData } from '@remix-run/react'
 import { redirect } from '@remix-run/node'
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { authorize } from '../../../onedrive.server'
 import {
   markAllChaptersAsSeen,
   markAllChapters,
@@ -20,69 +19,65 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import update from 'immutability-helper'
 
 export async function action({ request, params: { series } }) {
-  return authorize(request, async ({ token }) => {
-    const formData = await request.formData(),
-      checkedChapters = formData.getAll('chapters')
+  const formData = await request.formData(),
+    checkedChapters = formData.getAll('chapters')
 
-    if (formData.has('action-mark-all-unread')) {
-      await markAllChapters(series, false)
-      return redirect(`/manga/${series}/edit`)
-    } else if (formData.has('action-mark-all-read')) {
-      await markAllChapters(series, true)
-      return redirect(`/manga/${series}/edit`)
-    } else if (formData.has('action-show-all')) {
-      await showAllChapters(series)
-      return redirect(`/manga/${series}/edit`)
-    } else if (formData.has('action-dedup')) {
-      await dedupManga(series)
-      return redirect(`/manga/${series}/edit`)
-    } else if (formData.has('action-reorder')) {
-      await reorderChapters(JSON.parse(formData.get('action-reorder')))
-      return null
-    } else if (formData.has('action-resync')) {
-      await resyncManga(series)
-      return redirect(`/manga/${series}/edit`)
-    }
-
-    const { chapters } = await getMangaDetail(series)
-
-    for (const chapter of chapters) {
-      const id = chapter._id.toString()
-
-      if (formData.has(`action-mark-unread/${id}`)) {
-        await markChapter(id, false)
-        break
-      } else if (formData.has(`action-mark-read/${id}`)) {
-        await markChapter(id, true)
-        break
-      } else if (formData.has(`action-hide/${id}`)) {
-        await hideChapter(id)
-        break
-      }
-
-      if (checkedChapters.includes(id)) {
-        if (formData.has('action-mark-unread')) {
-          await markChapter(id, false)
-        } else if (formData.has('action-mark-read')) {
-          await markChapter(id, true)
-        } else if (formData.has('action-hide')) {
-          await hideChapter(id)
-        } else if (formData.has('action-remove')) {
-          await removeChapter(token, id)
-        }
-      }
-    }
-
+  if (formData.has('action-mark-all-unread')) {
+    await markAllChapters(series, false)
     return redirect(`/manga/${series}/edit`)
-  })
+  } else if (formData.has('action-mark-all-read')) {
+    await markAllChapters(series, true)
+    return redirect(`/manga/${series}/edit`)
+  } else if (formData.has('action-show-all')) {
+    await showAllChapters(series)
+    return redirect(`/manga/${series}/edit`)
+  } else if (formData.has('action-dedup')) {
+    await dedupManga(series)
+    return redirect(`/manga/${series}/edit`)
+  } else if (formData.has('action-reorder')) {
+    await reorderChapters(JSON.parse(formData.get('action-reorder')))
+    return null
+  } else if (formData.has('action-resync')) {
+    await resyncManga(series)
+    return redirect(`/manga/${series}/edit`)
+  }
+
+  const { chapters } = await getMangaDetail(series)
+
+  for (const chapter of chapters) {
+    const id = chapter._id.toString()
+
+    if (formData.has(`action-mark-unread/${id}`)) {
+      await markChapter(id, false)
+      break
+    } else if (formData.has(`action-mark-read/${id}`)) {
+      await markChapter(id, true)
+      break
+    } else if (formData.has(`action-hide/${id}`)) {
+      await hideChapter(id)
+      break
+    }
+
+    if (checkedChapters.includes(id)) {
+      if (formData.has('action-mark-unread')) {
+        await markChapter(id, false)
+      } else if (formData.has('action-mark-read')) {
+        await markChapter(id, true)
+      } else if (formData.has('action-hide')) {
+        await hideChapter(id)
+      } else if (formData.has('action-remove')) {
+        await removeChapter(id)
+      }
+    }
+  }
+
+  return redirect(`/manga/${series}/edit`)
 }
 
 export async function loader({ request, params: { series } }) {
-  return authorize(request, async () => {
-    await markAllChaptersAsSeen(series)
+  await markAllChaptersAsSeen(series)
 
-    return { chapters: (await getMangaDetail(series)).chapters }
-  })
+  return { chapters: (await getMangaDetail(series)).chapters }
 }
 
 export default function MangaSeriesEdit() {
@@ -297,7 +292,6 @@ function TableRow({ chapter: ch, index, moveChapter, id, dropChapter, enableDrag
     item: () => ({ id, index }),
     collect: monitor => ({ isDragging: monitor.isDragging() }),
     end(item) {
-      console.log(`The item ${ch.name} to position ${item.index}`)
       setTimeout(() => {
         dropChapter(item.id, item.index)
       }, 100)
