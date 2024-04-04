@@ -7,3 +7,5 @@ node_modules
 /public/thumbnails/*
 /app/styles/app.css
 app/styles/app.css
+
+credentials.json

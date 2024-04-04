@@ -9,7 +9,7 @@ processes = []
 PORT = "8080"
 MONGO_DB = "manga-reader-database"
 AWS_REGION = "eu-west-1"
-AWS_S3_BUCKET_NAME = "mangago-bucket"
+AWS_S3_BUCKET_NAME = "vojtechzicha-mangago-bucket"
 
 [experimental]
 allowed_public_ports = []
